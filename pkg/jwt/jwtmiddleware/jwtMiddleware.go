@@ -11,14 +11,16 @@ import (
 
 func AuthorizeJWT(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
-	tokenString := authHeader[:]
-	token, err := jwtservice.JWTAuthService().ValidateToken(tokenString)
-	if token.Valid {
-		claims := token.Claims.(jwt.MapClaims)
-		fmt.Println(claims)
+	if authHeader != "" {
+		token, err := jwtservice.JWTAuthService().ValidateToken(authHeader)
+		if err != nil && !token.Valid {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			fmt.Println(err)
+		} else {
+			claims := token.Claims.(jwt.MapClaims)
+			fmt.Println(claims)
+		}
 	} else {
-		fmt.Println("testing")
-		fmt.Println(err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
