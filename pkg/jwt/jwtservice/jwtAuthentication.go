@@ -1,6 +1,7 @@
 package jwtservice
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -62,7 +63,7 @@ func (service *jwtServices) GenerateToken(email string, isUser bool) string {
 func (service *jwtServices) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		if _, isvalid := token.Method.(*jwt.SigningMethodHMAC); !isvalid {
-			return nil, fmt.Errorf("Invalid token", token.Header["alg"])
+			return nil, errors.New(fmt.Sprint("Invalid token", token.Header["alg"]))
 
 		}
 		return []byte(service.secretKey), nil
