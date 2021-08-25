@@ -48,30 +48,33 @@ func (r *redis) Load(shortlink string) (string, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
-	expire, err := redisClient.String(conn.Do("HGET", shortlink, "expires"))
+	values, err := redisClient.Values(conn.Do("HGETALL", shortlink))
 	if err != nil {
-		return "", err
-	} else if len(expire) == 0 {
+		return "nil", err
+	} else if len(values) == 0 {
 		return "", fmt.Errorf("url not found")
 	}
 
-	expiretime, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", expire)
+	var shortLink store.Item
+	err = redisClient.ScanStruct(values, &shortLink)
 	if err != nil {
 		return "", err
-	} else if expiretime.Before(time.Now()) {
+	}
+
+	if len(shortLink.URL) == 0 {
+		return "", fmt.Errorf("url not found")
+	}
+
+	expire, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", shortLink.Expires)
+	if err != nil {
+		return "", err
+	} else if expire.Before(time.Now()) {
 		return "", fmt.Errorf("url expired")
-	}
-
-	urlString, err := redisClient.String(conn.Do("HGET", shortlink, "url"))
-	if err != nil {
-		return "", err
-	} else if len(urlString) == 0 {
-		return "", fmt.Errorf("url not found")
 	}
 
 	conn.Do("HINCRBY", shortlink, "visits", 1)
 
-	return urlString, nil
+	return shortLink.URL, nil
 }
 
 func (r *redis) LoadInfo(shortlink string) (*store.Item, error) {
