@@ -1,0 +1,18 @@
+{
+    "server": {
+        "port": "5000"
+    },
+    "options": {
+        "schema": "http",
+        "prefix": "localhost:5000"
+    },
+    "redis": {
+        "host": "127.0.0.1",
+        "port": "6379"
+    },
+    "jwtaccount": {
+        "username": "prohmpossadhorn@gmail.com",
+        "password": "382hf3fn",
+        "uuid": "684ed63e-03ab-4b0b-be2d-5be64f96ab80"
+    }
+}

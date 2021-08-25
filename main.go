@@ -12,7 +12,12 @@ import (
 )
 
 func main() {
-	jwthandlers.Initialize()
+	config, err := config.FromFile("./config/config.json")
+	if err != nil {
+		panic(err)
+	}
+
+	jwthandlers.Initialize(*config)
 
 	r := gin.Default()
 	r.GET("/", handlers.DefaultHandler)
@@ -25,7 +30,7 @@ func main() {
 		admin.GET("/test", jwthandlers.TestJwt)
 	}
 
-	err := r.Run(":" + config.PORT)
+	err = r.Run(":" + config.Server.Port)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to start the web server - Error: %v", err))
 	}

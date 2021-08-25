@@ -1,9 +1,5 @@
 package jwtservice
 
-import (
-	"url-shortener/config"
-)
-
 type LoginService interface {
 	LoginUser(email string, password string) bool
 }
@@ -12,10 +8,10 @@ type loginInformation struct {
 	password string
 }
 
-func StaticLoginService() LoginService {
+func StaticLoginService(email, password string) LoginService {
 	return &loginInformation{
-		email:    config.TEST_EMAIL,
-		password: config.TEST_PASSWORD,
+		email:    email,
+		password: password,
 	}
 }
 func (info *loginInformation) LoginUser(email string, password string) bool {
