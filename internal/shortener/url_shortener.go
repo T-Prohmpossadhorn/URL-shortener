@@ -10,7 +10,7 @@ import (
 	"github.com/itchyny/base58-go"
 )
 
-func GenerateShortLink(initialLink string, userId string) (string, error) {
+func GenerateShortLink(initialLink, userId string) (string, error) {
 	//check valid url
 	if match, _ := regexp.MatchString("^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$", initialLink); !match {
 		return "", fmt.Errorf("invalid site")

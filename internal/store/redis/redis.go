@@ -4,30 +4,31 @@ import (
 	"fmt"
 	"time"
 
+	"url-shortener/config"
 	"url-shortener/internal/shortener"
 	"url-shortener/internal/store"
 
 	redisClient "github.com/gomodule/redigo/redis"
 )
 
-type redis struct {
+type Redis struct {
 	pool     *redisClient.Pool
 	useruuid string
 }
 
-func New(host, port, useruuid string) (store.Service, error) {
+func New(config config.Config) (store.Service, error) {
 	pool := &redisClient.Pool{
 		MaxIdle:     10,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redisClient.Conn, error) {
-			return redisClient.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+			return redisClient.Dial("tcp", fmt.Sprintf("%s:%s", config.Redis.Host, config.Redis.Port))
 		},
 	}
 
-	return &redis{pool, useruuid}, nil
+	return &Redis{pool, config.JwtAccount.UUID}, nil
 }
 
-func (r *redis) Save(url string, expires string) (string, error) {
+func (r *Redis) Save(url string, expires string) (string, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -44,7 +45,7 @@ func (r *redis) Save(url string, expires string) (string, error) {
 	return shortlink, nil
 }
 
-func (r *redis) Load(shortlink string) (string, error) {
+func (r *Redis) Load(shortlink string) (string, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -79,7 +80,7 @@ func (r *redis) Load(shortlink string) (string, error) {
 	return shortLink.URL, nil
 }
 
-func (r *redis) LoadInfo(shortlink string) (*store.Item, error) {
+func (r *Redis) LoadInfo(shortlink string) (*store.Item, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -99,14 +100,21 @@ func (r *redis) LoadInfo(shortlink string) (*store.Item, error) {
 	return &data, nil
 }
 
-func (r *redis) Delete(shortlink string) error {
+func (r *Redis) Delete(shortlink string) error {
 	conn := r.pool.Get()
 	defer conn.Close()
 
-	_, err := conn.Do("HSET", shortlink, "expires", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
+	values, err := redisClient.Values(conn.Do("EXIST", shortlink))
+	if err != nil {
+		return err
+	} else if len(values) == 0 {
+		return fmt.Errorf("cannot find short link")
+	}
+	// expired from now on
+	_, err = conn.Do("HSET", shortlink, "expires", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
 	return err
 }
 
-func (r *redis) Close() error {
+func (r *Redis) Close() error {
 	return r.pool.Close()
 }
