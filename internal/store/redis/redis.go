@@ -27,7 +27,7 @@ func New(host, port, useruuid string) (store.Service, error) {
 	return &redis{pool, useruuid}, nil
 }
 
-func (r *redis) Save(url string, expires time.Time) (string, error) {
+func (r *redis) Save(url string, expires string) (string, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -36,7 +36,7 @@ func (r *redis) Save(url string, expires time.Time) (string, error) {
 		return "", err
 	}
 
-	_, err = conn.Do("HMSET", shortlink, "link", shortlink, "url", url, "expires", expires.Format("Mon, 02 Jan 2006 15:04:05 MST"), "visits", 0)
+	_, err = conn.Do("HMSET", shortlink, "link", shortlink, "url", url, "expires", expires, "visits", 0)
 	if err != nil {
 		return "", err
 	}
@@ -65,11 +65,13 @@ func (r *redis) Load(shortlink string) (string, error) {
 		return "", fmt.Errorf("url not found")
 	}
 
-	expire, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", shortLink.Expires)
-	if err != nil {
-		return "", err
-	} else if expire.Before(time.Now()) {
-		return "", fmt.Errorf("url expired")
+	if shortLink.Expires != "" {
+		expire, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", shortLink.Expires)
+		if err != nil {
+			return "", err
+		} else if expire.Before(time.Now()) {
+			return "", fmt.Errorf("url expired")
+		}
 	}
 
 	conn.Do("HINCRBY", shortlink, "visits", 1)
@@ -88,13 +90,21 @@ func (r *redis) LoadInfo(shortlink string) (*store.Item, error) {
 		return nil, fmt.Errorf("url not found")
 	}
 
-	var shortLink store.Item
-	err = redisClient.ScanStruct(values, &shortLink)
+	var data store.Item
+	err = redisClient.ScanStruct(values, &data)
 	if err != nil {
 		return nil, err
 	}
 
-	return &shortLink, nil
+	return &data, nil
+}
+
+func (r *redis) Delete(shortlink string) error {
+	conn := r.pool.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("HSET", shortlink, "expires", time.Now().Format("Mon, 02 Jan 2006 15:04:05 MST"))
+	return err
 }
 
 func (r *redis) Close() error {

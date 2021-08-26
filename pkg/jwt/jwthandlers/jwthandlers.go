@@ -2,6 +2,7 @@ package jwthandlers
 
 import (
 	"net/http"
+	"url-shortener/config"
 	"url-shortener/pkg/jwt/jwtcontroller"
 	"url-shortener/pkg/jwt/jwtservice"
 
@@ -12,8 +13,8 @@ var loginService jwtservice.LoginService
 var jwtService jwtservice.JWTService
 var loginController jwtcontroller.LoginController
 
-func Initialize() {
-	loginService = jwtservice.StaticLoginService()
+func Initialize(config config.Config) {
+	loginService = jwtservice.StaticLoginService(config.JwtAccount.Username, config.JwtAccount.Password)
 	jwtService = jwtservice.JWTAuthService()
 	loginController = jwtcontroller.LoginHandler(loginService, jwtService)
 }
