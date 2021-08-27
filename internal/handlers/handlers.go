@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"url-shortener/config"
 	"url-shortener/internal/store"
 
@@ -30,6 +31,15 @@ func CreateShortUrl(c *gin.Context) {
 			"error": err.Error(),
 		})
 		return
+	}
+
+	for _, v := range configuration.RegexBlockUrl {
+		if match, _ := regexp.MatchString(v, creationRequest.URL); match {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Errorf("URL is in Regex block list"),
+			})
+			return
+		}
 	}
 
 	shortUrl, err := (*storage).Save(creationRequest.URL, creationRequest.Expires)

@@ -22,6 +22,7 @@ type Config struct {
 		Password string `json:"password"`
 		UUID     string `json:"uuid"`
 	} `json:"jwtaccount"`
+	RegexBlockUrl []string `json:"regexblockurl"`
 }
 
 func FromFile(path string) (*Config, error) {
