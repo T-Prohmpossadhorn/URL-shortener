@@ -17,6 +17,7 @@ docker-compose up -d
 - API Client can send a url and be returned a shortened URL.
 - API Client can specify an expiration time for URLs, expired URLs must return HTTP 410
 - Input URL should be validated and respond with error if not a valid URL
+- Regex based blacklist for URLs, urls that match the blacklist respond with an error
 - Visiting the Shortened URLs must redirect to the original URL with a HTTP 302 redirect, 404 if not found.
 - Hit counter for shortened URLs (increment with every hit)
 - Admin api (requiring token) to list
@@ -26,6 +27,10 @@ docker-compose up -d
     - Number of hits
 - Above list can filter by Short Code
 - Admin api to delete a URL (after deletion shortened URLs must return HTTP 410)
+
+### Customization
+
+all customization can be done by modifying `config.json`
 
 ### Using the tool
 
