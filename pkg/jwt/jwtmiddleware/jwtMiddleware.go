@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"url-shortener/pkg/jwt/jwtservice"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func AuthorizeJWT(c *gin.Context) {
