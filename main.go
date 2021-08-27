@@ -28,7 +28,7 @@ func main() {
 
 	r := gin.Default()
 	r.GET("/", handlers.DefaultHandler)
-	r.GET(":shortUrl", handlers.HandleShortUrlRedirect)
+	r.GET("/:shortUrl", handlers.HandleShortUrlRedirect)
 
 	r.POST("/login", jwthandlers.GenerateToken)
 
@@ -36,8 +36,8 @@ func main() {
 	admin.Use(jwtmiddleware.AuthorizeJWT)
 	{
 		admin.GET("/test", jwthandlers.TestJwt)
-		admin.POST("/:shortUrl", handlers.CreateShortUrl)
-		admin.GET("/:shortURL", handlers.GetShortUrlInfo)
+		admin.POST("/", handlers.CreateShortUrl)
+		admin.GET("/:shortUrl", handlers.GetShortUrlInfo)
 		admin.DELETE("/:shortUrl", handlers.DeleteShortUrl)
 	}
 

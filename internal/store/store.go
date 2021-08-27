@@ -9,7 +9,7 @@ type Service interface {
 }
 
 type Item struct {
-	Link    uint64 `json:"link" redis:"link"`
+	Link    string `json:"link" redis:"link"`
 	URL     string `json:"url" redis:"url"`
 	Expires string `json:"expires" redis:"expires"`
 	Visits  int    `json:"visits" redis:"visits"`

@@ -43,7 +43,7 @@ func CreateShortUrl(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message":   "short url created successfully",
-		"short_url": configuration.Options.Schema + configuration.Options.Prefix + shortUrl,
+		"short_url": configuration.Options.Schema + "://" + configuration.Options.Prefix + "/" + shortUrl,
 	})
 }
 
@@ -81,21 +81,23 @@ func HandleShortUrlRedirect(c *gin.Context) {
 	shorturl := c.Param("shortUrl")
 
 	url, err := (*storage).Load(shorturl)
+
 	if err != nil {
 		switch err {
 		case fmt.Errorf("url not found"):
 			c.JSON(http.StatusNotFound, gin.H{
-				"message": err.Error(),
+				"error": err.Error(),
 			})
 		case fmt.Errorf("url expired"):
 			c.JSON(http.StatusGone, gin.H{
-				"message": err.Error(),
+				"error": err.Error(),
 			})
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": err.Error(),
+				"error": err.Error(),
 			})
 		}
+		return
 	}
 
 	c.Redirect(http.StatusFound, url)
