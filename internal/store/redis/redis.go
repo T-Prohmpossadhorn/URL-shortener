@@ -104,10 +104,10 @@ func (r *Redis) Delete(shortlink string) error {
 	conn := r.pool.Get()
 	defer conn.Close()
 
-	values, err := redisClient.Values(conn.Do("EXISTS", shortlink))
+	values, err := conn.Do("EXISTS", shortlink)
 	if err != nil {
 		return err
-	} else if len(values) == 0 {
+	} else if values == 0 {
 		return fmt.Errorf("cannot find short link")
 	}
 	// expired from now on
